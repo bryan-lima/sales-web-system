@@ -18,34 +18,36 @@ namespace SalesWebMVC.Services
             _context = context;
         }
 
-        public List<Seller> FindAll()
+        public async Task<List<Seller>> FindAllAsync()
         {
-            return _context.Seller.ToList();
+            return await _context.Seller.ToListAsync();
         }
 
-        public void Insert(Seller seller)
+        public async Task InsertAsync(Seller seller)
         {
             _context.Add(seller);
-            _context.SaveChanges();
+            await _context.SaveChangesAsync();
         }
 
-        public Seller FindById(int id)
+        public async Task<Seller> FindByIdAsync(int id)
         {
-            return _context.Seller.Include(seller => seller.Department)
-                                  .FirstOrDefault(seller => seller.Id == id);
+            return await _context.Seller.Include(seller => seller.Department)
+                                  .FirstOrDefaultAsync(seller => seller.Id == id);
         }
 
-        public void Remove(int id)
+        public async Task RemoveAsync(int id)
         {
-            Seller _seller = _context.Seller.Find(id);
+            Seller _seller = await _context.Seller.FindAsync(id);
 
             _context.Seller.Remove(_seller);
-            _context.SaveChanges();
+            await _context.SaveChangesAsync();
         }
 
-        public void Update(Seller seller)
+        public async Task Update(Seller seller)
         {
-            if (!_context.Seller.Any(objectSeller => objectSeller.Id == seller.Id))
+            bool hasAny = await _context.Seller.AnyAsync(objectSeller => objectSeller.Id == seller.Id);
+
+            if (!hasAny)
             {
                 throw new NotFoundException("Id not found");
             }
@@ -53,7 +55,7 @@ namespace SalesWebMVC.Services
             try
             {
                 _context.Update(seller);
-                _context.SaveChanges();
+                await _context.SaveChangesAsync();
             }
             catch (DbUpdateConcurrencyException ex)
             {
